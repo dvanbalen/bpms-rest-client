@@ -44,8 +44,6 @@ public class BPMSExecuteTest {
 					extraJaxbClassList);
 
 			Map<String, Object> vars = new HashMap<String, Object>();
-			vars.put("appraiserFirst", "David");
-			vars.put("appraiserLast", "vB");
 			vars.put("user", u);
 			StartProcessCommand cmd = new StartProcessCommand(
 					"Workflows.TaskAssignment", vars);
