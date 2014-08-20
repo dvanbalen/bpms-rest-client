@@ -1,5 +1,8 @@
 package com.redhat.rest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +17,7 @@ import javax.ws.rs.core.Response;
 
 import org.drools.core.command.runtime.process.StartProcessCommand;
 import org.jboss.resteasy.client.ClientResponseFailure;
+import org.jboss.resteasy.plugins.providers.jaxb.JaxbMap.Entry;
 import org.jboss.resteasy.util.Base64;
 import org.jbpm.services.task.commands.DelegateTaskCommand;
 import org.kie.api.command.Command;
@@ -30,28 +34,37 @@ public class BpmsRestCommandHelper {
 	private static Logger LOG = LoggerFactory
 			.getLogger(BpmsRestCommandHelper.class);
 
+	private Set<Class<?>> extraJaxbClassList = new HashSet<>();
+	private List<Command> cmds = new ArrayList<>();
+
 	private String runtime_uri = "http://localhost:8080/business-central/rest/runtime/";
 
-	public StartProcessCommand createStartProcessCommand(String workflowId,
+	public void createStartProcessCommand(String workflowId,
 			Map<String, Object> params) {
+
+		// Get list of parameter classes to add to JAXB context
+		if (params != null && !params.isEmpty()) {
+			for (Map.Entry<String, Object> e : params.entrySet()) {
+				extraJaxbClassList.add(e.getValue().getClass());
+			}
+		}
 
 		StartProcessCommand cmd = new StartProcessCommand(workflowId, params);
 
-		return cmd;
+		cmds.add(cmd);
 
 	}
 
-	public DelegateTaskCommand createDelegateTaskCommand(long taskId,
-			String userId, String targetUserId) {
+	public void createDelegateTaskCommand(long taskId, String userId,
+			String targetUserId) {
 
 		DelegateTaskCommand cmd = new DelegateTaskCommand(taskId, userId,
 				targetUserId);
 
-		return cmd;
+		cmds.add(cmd);
 	}
 
-	public Response sendBpmsCommands(List<Command> cmds, String processId,
-			Set<Class<?>> extraJaxbClassList) {
+	public void sendBpmsCommands(String processId) throws Exception {
 		Response response = null;
 
 		String uri = runtime_uri + processId + "/execute";
@@ -62,25 +75,42 @@ public class BpmsRestCommandHelper {
 		String auth = "Basic " + b64enc;
 		String jaxbRequestString = null;
 
-		System.out.println("Auth: " + auth);
+		try {
+			System.out.println("Sending " + cmds.size() + " commands to BPMS.");
+			System.out.println("Auth: " + auth);
 
-		JaxbSerializationProvider jaxbProvider = new JaxbSerializationProvider(
-				extraJaxbClassList);
+			JaxbSerializationProvider jaxbProvider = new JaxbSerializationProvider(
+					extraJaxbClassList);
 
-		JaxbCommandsRequest req = new JaxbCommandsRequest(processId, cmds);
+			JaxbCommandsRequest req = new JaxbCommandsRequest(processId, cmds);
 
-		jaxbRequestString = jaxbProvider.serialize(req);
+			jaxbRequestString = jaxbProvider.serialize(req);
 
-		Client client = ClientBuilder.newClient();
-		WebTarget target = client.target(uri);
+			Client client = ClientBuilder.newClient();
+			WebTarget target = client.target(uri);
 
-		response = target
-				.request()
-				.header("Authorization", auth)
-				.post(Entity.entity(jaxbRequestString,
-						MediaType.APPLICATION_XML));
+			response = target
+					.request()
+					.header("Authorization", auth)
+					.post(Entity.entity(jaxbRequestString,
+							MediaType.APPLICATION_XML));
 
-		return response;
+			this.processJaxbCommandResponse(response);
+		} finally {
+			if (cmds != null) {
+				cmds.clear();
+			}
+			if(extraJaxbClassList != null) {
+				extraJaxbClassList.clear();
+			}
+			try {
+				if (response != null) {
+					response.close();
+				}
+			} catch (Throwable t) {
+				// ignore
+			}
+		}
 
 	}
 
@@ -88,8 +118,11 @@ public class BpmsRestCommandHelper {
 		JaxbCommandsResponse commandResponse = null;
 		JaxbCommandResponse<?> responseObject = null;
 
+		System.out.println("Status: " + response.getStatus() + " class: "
+				+ response.getClass().getName());
+
 		commandResponse = response.readEntity(JaxbCommandsResponse.class);
-		if(commandResponse == null) {
+		if (commandResponse == null) {
 			System.out.println("command response is null");
 		}
 		List<JaxbCommandResponse<?>> responses = commandResponse.getResponses();
