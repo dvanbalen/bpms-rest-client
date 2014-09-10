@@ -2,18 +2,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.redhat.consulting</groupId>
-	<artifactId>bpms-rest-test</artifactId>
+	<artifactId>bpms-rest-client</artifactId>
   <name>bpms-rest-test</name>
   <dependencies>
   	<dependency>
   		<groupId>org.jboss.resteasy</groupId>
   		<artifactId>jaxrs-api</artifactId>
   		<version>3.0.6.Final</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.jboss.resteasy</groupId>
-  		<artifactId>resteasy-jaxb-provider</artifactId>
-  		<version>2.3.6.Final-redhat-1</version>
   	</dependency>
   	<dependency>
   		<groupId>org.drools</groupId>
@@ -29,16 +24,6 @@
   		<groupId>com.sun.xml.bind</groupId>
   		<artifactId>jaxb-impl</artifactId>
   		<version>2.2.5-redhat-5</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.jboss.resteasy</groupId>
-  		<artifactId>resteasy-client</artifactId>
-  		<version>3.0.6.Final</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.jboss.resteasy</groupId>
-  		<artifactId>resteasy-jaxrs</artifactId>
-  		<version>3.0.6.Final</version>
   	</dependency>
   	<dependency>
   		<groupId>org.codehaus.jackson</groupId>
@@ -66,9 +51,14 @@
   		<version>1.9.9-redhat-2</version>
   	</dependency>
   	<dependency>
+  		<groupId>org.apache.cxf</groupId>
+  		<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+  		<version>2.7.0</version>
+  	</dependency>
+  	<dependency>
   		<groupId>com.redhat.consulting</groupId>
   		<artifactId>bpms-rest-domain</artifactId>
-  		<version>[1.0,)</version>
+  		<version>1.5</version>
   	</dependency>
   </dependencies>
   	<build>
@@ -94,5 +84,5 @@
 			</plugin>
 		</plugins>
 	</build>
-  <version>(1.0,]</version>
+  <version>1.0</version>
 </project>

@@ -15,10 +15,12 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.cxf.common.util.Base64Utility;
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.drools.core.command.runtime.process.StartProcessCommand;
-import org.jboss.resteasy.client.ClientResponseFailure;
+/*import org.jboss.resteasy.client.ClientResponseFailure;
 import org.jboss.resteasy.plugins.providers.jaxb.JaxbMap.Entry;
-import org.jboss.resteasy.util.Base64;
+import org.jboss.resteasy.util.Base64;*/
 import org.jbpm.services.task.commands.DelegateTaskCommand;
 import org.kie.api.command.Command;
 import org.kie.services.client.serialization.JaxbSerializationProvider;
@@ -38,6 +40,11 @@ public class BpmsRestCommandHelper {
 	private List<Command> cmds = new ArrayList<>();
 
 	private String runtime_uri = "http://localhost:8080/business-central/rest/runtime/";
+	private String authorization = null;
+	
+	public void setAuthorization(String authorization) {
+		this.authorization = authorization;
+	}
 
 	public void createStartProcessCommand(String workflowId,
 			Map<String, Object> params) {
@@ -68,14 +75,18 @@ public class BpmsRestCommandHelper {
 		Response response = null;
 
 		String uri = runtime_uri + processId + "/execute";
-		String username = "mary";
-		String password = "mary123!";
-		String b64enc = Base64.encodeBytes((username + ":" + password)
+		String username = "david";
+		String password = "david123!";
+/*		String b64enc = Base64.encodeBytes((username + ":" + password)
 				.getBytes());
+*/		String b64enc = Base64Utility.encode((username+":"+password).getBytes());
 		String auth = "Basic " + b64enc;
 		String jaxbRequestString = null;
 
 		try {
+			if(authorization != null) {
+				auth = authorization;
+			}
 			System.out.println("Sending " + cmds.size() + " commands to BPMS.");
 			System.out.println("Auth: " + auth);
 
@@ -86,7 +97,7 @@ public class BpmsRestCommandHelper {
 
 			jaxbRequestString = jaxbProvider.serialize(req);
 
-			Client client = ClientBuilder.newClient();
+/*			Client client = ClientBuilder.newClient();
 			WebTarget target = client.target(uri);
 
 			response = target
@@ -94,7 +105,11 @@ public class BpmsRestCommandHelper {
 					.header("Authorization", auth)
 					.post(Entity.entity(jaxbRequestString,
 							MediaType.APPLICATION_XML));
-
+*/
+			
+			WebClient client = WebClient.create(uri);
+			client = client.header("Authorization", auth).type(MediaType.APPLICATION_XML);
+			response = client.post(jaxbRequestString);
 			this.processJaxbCommandResponse(response);
 		} finally {
 			if (cmds != null) {
