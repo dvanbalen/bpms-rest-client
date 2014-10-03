@@ -1,6 +1,8 @@
 package com.redhat.rest;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -15,7 +17,7 @@ public class BPMSExecuteTest {
 
 	public static void main(String[] args) throws Exception {
 		String processId = "com.redhat.consulting:Workflows:1.0";
-		String workflowId = "Workflows.TaskAssignment";
+		String workflowId = "Workflows.TestProcess";
 		Scanner keyboard = null;
 		long taskId = 0L;
 
@@ -29,7 +31,12 @@ public class BPMSExecuteTest {
 
 			// Add user parameter as process variable called "user"
 			Map<String, Object> params = new HashMap<String, Object>();
-			params.put("user", u);
+			List<String> myList = new ArrayList<>();
+			myList.add("fred");
+			myList.add("ted");
+			params.put("user", "foo");
+			params.put("email", "bar");
+			params.put("myList", myList);
 
 			// Create task instance
 			test.createStartProcessCommand(workflowId, params);

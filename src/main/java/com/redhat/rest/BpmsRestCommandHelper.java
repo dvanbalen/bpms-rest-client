@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.drools.core.command.runtime.process.StartProcessCommand;
+import org.drools.core.xml.jaxb.util.JaxbListWrapper;
 /*import org.jboss.resteasy.client.ClientResponseFailure;
 import org.jboss.resteasy.plugins.providers.jaxb.JaxbMap.Entry;
 import org.jboss.resteasy.util.Base64;*/
@@ -55,6 +56,7 @@ public class BpmsRestCommandHelper {
 				extraJaxbClassList.add(e.getValue().getClass());
 			}
 		}
+		extraJaxbClassList.add(JaxbListWrapper.class);
 
 		StartProcessCommand cmd = new StartProcessCommand(workflowId, params);
 
